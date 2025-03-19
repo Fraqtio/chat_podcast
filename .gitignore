@@ -1,0 +1,7 @@
+# Ignore virtual environments
+venv/
+src/keys.py
+
+# Ignore logs and temp files
+logs/
+*.log
