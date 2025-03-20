@@ -1,7 +1,6 @@
 from openai import OpenAI
-import os
 import json
-from src.dialog_parser import get_top_keywords
+from src.dialog_parser import get_top_keywords, dictionary_key_info
 from src.config import SPEAKER1_JSON_PATH, SPEAKER2_JSON_PATH
 from src.keys import OPENAI_KEY
 
@@ -13,14 +12,17 @@ client = OpenAI(api_key=OPENAI_KEY)
 def generate_text(model="gpt-4o", max_tokens=2000):
     """Generates text using OpenAI API."""
     topics = get_top_keywords()
+
     prompt = f"""
             I want you to write a podcast dialog.
             It must be a discussion about following topics: {", ".join(topics)}
+            And use this information about this topics: {dictionary_key_info(topics)}
             Result must looks like:
             "First sentence to speak from person 1."
             "First sentence to speak from person 2."
             "Second sentence to speak from person 1." 
-            etc. without mention of speaker.
+            etc. without mention of speaker. 
+            Make sure they ask questions to each other and response like in normal conversation. 
             Make sure your response will handle 2000 tokens
             """
     try:
@@ -69,4 +71,3 @@ def generate_json():
                 else:
                     json.dump(text_entry, outfile2)
                     outfile2.write("\n")
-

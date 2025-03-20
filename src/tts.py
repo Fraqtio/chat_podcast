@@ -14,6 +14,7 @@ def geretare_wav():
     subprocess.run(cmd1, shell=True, cwd=TTS_OUTPUT_PATH)
     subprocess.run(cmd2, shell=True, cwd=TTS_OUTPUT_PATH)
 
+
 def combine_wav():
     # Define the directory where WAV files are stored
     output_file = "final_podcast.wav"
@@ -38,3 +39,9 @@ def combine_wav():
 
     # Export the final concatenated file
     combined_audio.export(output_file, format="wav")
+
+    # Delete all individual WAV files except the final one
+    for wav in wav_files:
+        wav_path = os.path.join(TTS_OUTPUT_PATH, wav)
+        if wav_path != output_file:  # Ensure we don't delete the final podcast
+            os.remove(wav_path)
