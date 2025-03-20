@@ -4,14 +4,14 @@ from collections import Counter
 from src.config import nlp, INPUT_DIALOG_PATH, INPUT_DICTIONARY_PATH
 
 
-def get_top_keywords(file_path=INPUT_DIALOG_PATH, top_n=10):
+def get_top_keywords(dialog_file_path=INPUT_DIALOG_PATH, top_n=10):
     """Extracts and returns the top N keywords from the given dialog file."""
     cleaned_text = []
     pattern = re.compile(r'^".+?":$')  # Matches lines with speaker names
 
     try:
         # Read file and filter out speaker names
-        with open(file_path, "r", encoding="UTF8") as file:
+        with open(dialog_file_path, "r", encoding="UTF8") as file:
             for line in file:
                 if not pattern.match(line.strip()):
                     cleaned_text.append(line.strip())
@@ -30,15 +30,15 @@ def get_top_keywords(file_path=INPUT_DIALOG_PATH, top_n=10):
         return [word for word, _ in keyword_counts.most_common(top_n)]
 
     except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found.")
+        print(f"Error: File '{dialog_file_path}' not found.")
         return []
     except Exception as e:
         print(f"Unexpected error: {e}")
         return []
 
 
-def dictionary_key_info(keywords):
-    with open(INPUT_DICTIONARY_PATH, 'r') as file:
+def dictionary_key_info(keywords, dictionary_file_path=INPUT_DICTIONARY_PATH):
+    with open(dictionary_file_path, 'r') as file:
         json_data = json.load(file)
 
         matching_keys = set(keywords) & set(json_data.keys())

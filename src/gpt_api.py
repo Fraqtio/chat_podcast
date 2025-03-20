@@ -1,30 +1,40 @@
 from openai import OpenAI
 import json
+import os
 from src.dialog_parser import get_top_keywords, dictionary_key_info
-from src.config import SPEAKER1_JSON_PATH, SPEAKER2_JSON_PATH
 from src.keys import OPENAI_KEY
 
-
-# Initialize OpenAI client (NEW WAY)
+# Initialize OpenAI client
 client = OpenAI(api_key=OPENAI_KEY)
 
 
-def generate_text(model="gpt-4o", max_tokens=2000):
-    """Generates text using OpenAI API."""
-    topics = get_top_keywords()
+def generate_text(session_path, model="gpt-4o", max_tokens=2000):
+    """Generates text using OpenAI API and saves it in the session folder."""
 
+    dialog_path = os.path.join(session_path, "dialog.txt")
+    dictionary_path = os.path.join(session_path, "dictionary.json")
+    response_path = os.path.join(session_path, "last_response.txt")
+
+    # Extract topics from the session’s dialog.txt
+    topics = get_top_keywords(dialog_path)
+
+    # Retrieve topic information from dictionary.json
+    topic_info = dictionary_key_info(keywords=topics, dictionary_file_path=dictionary_path)
+
+    # Construct the AI prompt
     prompt = f"""
-            I want you to write a podcast dialog.
-            It must be a discussion about following topics: {", ".join(topics)}
-            And use this information about this topics: {dictionary_key_info(topics)}
-            Result must looks like:
-            "First sentence to speak from person 1."
-            "First sentence to speak from person 2."
-            "Second sentence to speak from person 1." 
-            etc. without mention of speaker. 
-            Make sure they ask questions to each other and response like in normal conversation. 
-            Make sure your response will handle 2000 tokens
-            """
+    I want you to write a podcast dialog.
+    It must be a discussion about the following topics: {", ".join(topics)}.
+    Use this information about these topics: {topic_info}.
+    The result must look like:
+    "First sentence from person 1."
+    "First sentence from person 2."
+    "Second sentence from person 1."
+    etc., without mentioning the speaker's name.
+    Make sure they ask questions and respond naturally, like a real conversation.
+    Ensure your response fits within 2000 tokens.
+    """
+
     try:
         # Make API request
         response = client.chat.completions.create(
@@ -37,12 +47,11 @@ def generate_text(model="gpt-4o", max_tokens=2000):
             temperature=0.7
         )
 
-        # Extract the AI's response
+        # Extract and save response
         output_text = response.choices[0].message.content.strip()
 
-        # Save response to file
-        with open("last_response.txt", mode="w", encoding="UTF-8") as f:
-            f.writelines(line + "\n" for line in response.choices[0].message.content.split("\n") if line.strip())
+        with open(response_path, "w", encoding="UTF-8") as f:
+            f.writelines(line + "\n" for line in output_text.split("\n") if line.strip())
 
         return output_text
 
@@ -51,23 +60,23 @@ def generate_text(model="gpt-4o", max_tokens=2000):
         return None
 
 
-def generate_json():
-    # Read file and process lines
-    with open(SPEAKER1_JSON_PATH, "w", encoding="utf-8") as outfile1, open(SPEAKER2_JSON_PATH, "w",
-                                                                           encoding="utf-8") as outfile2:
-        # Read the response file and process each line
-        with open('last_response.txt', 'r', encoding="utf-8") as file:
-            for count, line in enumerate(file):
+def generate_json(session_path):
+    """Generates JSON files for TTS processing inside the session folder."""
 
-                text_entry = {
-                    "text": line.strip().strip('"'),  # Remove surrounding quotes & spaces
-                    "output_file": f"line_{count:03d}.wav",
-                }
+    response_path = os.path.join(session_path, "last_response.txt")
+    speaker1_json = os.path.join(session_path, "input_one.json")
+    speaker2_json = os.path.join(session_path, "input_two.json")
 
-                # Alternate between two speakers
-                if count % 2 == 0:
-                    json.dump(text_entry, outfile1)
-                    outfile1.write("\n")
-                else:
-                    json.dump(text_entry, outfile2)
-                    outfile2.write("\n")
+    with open(response_path, "r", encoding="utf-8") as file, \
+            open(speaker1_json, "w", encoding="utf-8") as outfile1, \
+            open(speaker2_json, "w", encoding="utf-8") as outfile2:
+
+        for count, line in enumerate(file):
+            text_entry = {"text": line.strip().strip('"'), "output_file": f"line_{count:03d}.wav"}
+
+            if count % 2 == 0:
+                json.dump(text_entry, outfile1)
+                outfile1.write("\n")
+            else:
+                json.dump(text_entry, outfile2)
+                outfile2.write("\n")
