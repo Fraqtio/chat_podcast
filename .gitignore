@@ -1,10 +1,17 @@
 # Ignore virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.idea/
 venv/
+logs/
+*.log
 src/keys.py
 #Ignore TTS
 piper/
 #Ignore audio-codec
 ffmpeg/
-# Ignore logs and temp files
-logs/
-*.log
+#Ignore sessions temp files
+sessions/
