@@ -1,10 +1,10 @@
 import re
 import json
 from collections import Counter
-from src.config import nlp, INPUT_DIALOG_PATH, INPUT_DICTIONARY_PATH
+from src.config import nlp
 
 
-def get_top_keywords(dialog_file_path=INPUT_DIALOG_PATH, top_n=10):
+def get_top_keywords(dialog_file_path, top_n=10):
     """Extracts and returns the top N keywords from the given dialog file."""
     cleaned_text = []
     pattern = re.compile(r'^".+?":$')  # Matches lines with speaker names
@@ -37,7 +37,7 @@ def get_top_keywords(dialog_file_path=INPUT_DIALOG_PATH, top_n=10):
         return []
 
 
-def dictionary_key_info(keywords, dictionary_file_path=INPUT_DICTIONARY_PATH):
+def dictionary_key_info(keywords, dictionary_file_path):
     with open(dictionary_file_path, 'r') as file:
         json_data = json.load(file)
 

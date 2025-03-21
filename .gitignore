@@ -1,7 +1,10 @@
 # Ignore virtual environments
 venv/
 src/keys.py
-
+#Ignore TTS
+piper/
+#Ignore audio-codec
+ffmpeg/
 # Ignore logs and temp files
 logs/
 *.log
