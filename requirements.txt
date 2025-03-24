@@ -1,0 +1,4 @@
+pydub~=0.25.1
+spacy~=3.8.4
+openai~=1.66.3
+fastapi~=0.115.11
