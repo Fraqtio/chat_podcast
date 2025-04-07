@@ -5,6 +5,8 @@ from datetime import datetime
 from openai import OpenAI
 from src.dialog_parser import get_top_keywords, dictionary_key_info
 from src.keys import OPENAI_KEY
+from src.config import INPUT_DICTIONARY_PATH, INPUT_DIALOG_PATH
+
 
 # Setup logging
 log_filename = os.path.join("logs", f"gpt_api_{datetime.now().strftime('%Y-%m-%d')}.log")
@@ -22,19 +24,17 @@ client = OpenAI(api_key=OPENAI_KEY)
 def generate_text(session_path, model="gpt-4o", max_tokens=2000):
     """Generates text using OpenAI API and saves it in the session folder."""
 
-    dialog_path = os.path.join(session_path, "dialog.txt")
-    dictionary_path = os.path.join(session_path, "dictionary.json")
     response_path = os.path.join(session_path, "last_response.txt")
 
     logging.info(f"Starting text generation for session: {session_path}")
 
     try:
         # Extract keywords from dialog
-        topics = get_top_keywords(dialog_path)
+        topics = get_top_keywords(INPUT_DIALOG_PATH)
         logging.info(f"Extracted topics: {topics}")
 
         # Get corresponding dictionary info
-        topic_info = dictionary_key_info(keywords=topics, dictionary_file_path=dictionary_path)
+        topic_info = dictionary_key_info(keywords=topics, dictionary_file_path=INPUT_DICTIONARY_PATH)
         logging.info(f"Retrieved info for {len(topic_info)} keyword(s)")
 
         # Compose the prompt
